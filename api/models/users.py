@@ -49,7 +49,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     about = models.TextField(_('about'), max_length=500, default = "A bio hasn't been added yet.")
     is_staff = models.BooleanField(default=False)
     # activated at email validation only, not at registration.
-    #is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
     profile = models.ImageField(upload_to="uploads/users", blank=True)
     thumbnail = models.ImageField(upload_to="uploads/users", blank=True)
