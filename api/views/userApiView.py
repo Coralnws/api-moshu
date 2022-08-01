@@ -53,7 +53,7 @@ class UserRegisterView(generics.GenericAPIView):
 
     @swagger_auto_schema(operation_summary="Register New User")
     def post(self, request):
-        try:
+        #try:
             email = request.data.get('email', '')
             username = request.data.get('username', '')
             password = request.data.get('password', '')
@@ -81,8 +81,8 @@ class UserRegisterView(generics.GenericAPIView):
             data = serializer.data
             data['message'] = "Register Account Successfully"
             return Response(data, status=status.HTTP_201_CREATED)
-        except:
-            return Response({"message": "Register Account Failed"}, status=status.HTTP_400_BAD_REQUEST)
+        #except:
+         #   return Response({"message": "Register Account Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
 """
 POST: Login

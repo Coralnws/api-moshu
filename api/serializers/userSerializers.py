@@ -25,7 +25,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         instance = self.Meta.model(
             email=self.validated_data['email'],
             username=self.validated_data['username'],
-            realname = self.validated_date['realname'],
+            realname = self.validated_data['realname'],
         )
 
         password = self.validated_data['password']
