@@ -175,8 +175,13 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.ScryptPasswordHasher',
 ]
 
+# Adding CustomUser model from users app.
+# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
+
+AUTH_USER_MODEL = 'api.CustomUser'
 
 
+'''
 # Email Sending Protocol
 
 EMAIL_FROM_USER = env('EMAIL_FROM_USER')
@@ -198,7 +203,7 @@ AWS_S3_SIGNATURE_VERSION = env('AWS_S3_SIGNATURE_VERSION')
 AWS_FILE_OVERWIRTE = env('AWS_FILE_OVERWIRTE')
 AWS_DEFAULT_ACL = env('AWS_DEFAULT_ACL')
 DEFAULT_FILE_STORAGE = env('DEFAULT_FILE_STORAGE')
-
+'''
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
