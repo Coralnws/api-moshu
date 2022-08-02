@@ -27,6 +27,9 @@ class InvitationAdminConfig(admin.ModelAdmin):
 class UserTeamAdminConfig(admin.ModelAdmin):
     list_display = ('team', 'user', 'isAdmin', 'isMainAdmin')
 
+class UserProjectAdminConfig(admin.ModelAdmin):
+    list_display = ('project', 'user', 'isAdmin', 'isMainAdmin')
+
 
 
 admin.site.register(CustomUser, UserAdminConfig)
@@ -35,3 +38,4 @@ admin.site.register(Project, ProjectAdminConfig)
 admin.site.register(Document, DocumentAdminConfig)
 admin.site.register(Invitation, InvitationAdminConfig)
 admin.site.register(UserTeam, UserTeamAdminConfig)
+admin.site.register(UserProject, UserProjectAdminConfig)
