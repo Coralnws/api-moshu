@@ -14,8 +14,9 @@ class Invitation(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=False, blank=False)
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=False, blank=False,related_name='user_invite')
     team = models.ForeignKey("Team", on_delete=models.CASCADE, null=False, blank=False)
+    invitedBy = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=True,blank=False,related_name='inviteBy')
     result = models.IntegerField(choices=RESULT,null=False, blank=False, default=0)
     createdAt = models.DateTimeField(default=timezone.now)
     updatedAt = models.DateTimeField(default=timezone.now)

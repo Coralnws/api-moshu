@@ -8,6 +8,7 @@ class UserTeam(models.Model):
     isAdmin = models.BooleanField(default=False)
     isMainAdmin = models.BooleanField(default=False) #isCreator
     createdAt = models.DateTimeField(default=timezone.now)
+    updatedAt = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ('team','user')

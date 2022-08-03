@@ -115,4 +115,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+"""
+Serializer for List All Users
+"""
+class ListUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'profile']
 
+class ListMemberSerializer(serializers.ModelSerializer):
+    isAdmin = serializers.IntegerField()
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'profile','isAdmin']
