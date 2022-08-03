@@ -45,15 +45,19 @@ class ProjectDetailView(generics.GenericAPIView):
     def put(self, request, projectId):
         # try:
             project = get_object_or_404(Project, pk=projectId)
+            isMember = UserTeam.objects.get(team=project.belongTo.id, user=request.user)
             # will open permission for when the person is the mainAdmin or admin of the team
-            if not request.user.is_staff and request.user != project.createdBy:
+            # if not request.user.is_staff and request.user != project.createdBy:
+            #     return Response({"message": "Unauthorized for update feed"}, status=status.HTTP_401_UNAUTHORIZED)
+            if isMember:
+                serializer = self.get_serializer(instance=project, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(updatedAt=timezone.now())
+                data = serializer.data
+                data['message'] = "Update Project Successfully"
+                return Response(data, status=status.HTTP_200_OK)
+            else:
                 return Response({"message": "Unauthorized for update feed"}, status=status.HTTP_401_UNAUTHORIZED)
-            serializer = self.get_serializer(instance=project, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(updatedAt=timezone.now())
-            data = serializer.data
-            data['message'] = "Update Project Successfully"
-            return Response(data, status=status.HTTP_200_OK)
         # except:
         #     return Response({"message": "Update Project Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,15 +90,17 @@ class ProjectCreateView(generics.CreateAPIView):
             isMember = UserTeam.objects.get(team=teamId, user=request.user)
             # print("isMember", isMember)
             if isMember:
-                if not isMember.isAdmin and not isMember.isMainAdmin:
-                    return Response({"message": "Unauthorized to Create Project in Team"}, status=status.HTTP_403_FORBIDDEN)
-            team = get_object_or_404(Team, pk=teamId)
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(createdBy=request.user, belongTo=team)
-            data = serializer.data
-            data['message'] = "Create Project Successfully"
-            return Response(data, status=status.HTTP_201_CREATED)
+                # if not isMember.isAdmin and not isMember.isMainAdmin:
+                #     return Response({"message": "Unauthorized to Create Project in Team"}, status=status.HTTP_403_FORBIDDEN)
+                team = get_object_or_404(Team, pk=teamId)
+                serializer = self.get_serializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(createdBy=request.user, belongTo=team)
+                data = serializer.data
+                data['message'] = "Create Project Successfully"
+                return Response(data, status=status.HTTP_201_CREATED)
+            else :
+                return Response({"message": "Unauthorized to Create Project in Team"}, status=status.HTTP_403_FORBIDDEN)
         # except:
         #     return Response({"message": "Create Project Failed"}, status=status.HTTP_400_BAD_REQUEST)
 

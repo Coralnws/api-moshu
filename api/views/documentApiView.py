@@ -1,3 +1,4 @@
+import json
 import operator
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -8,7 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ..serializers.documentSerializers import *
 from ..models.documents import *
-from ..models.userRelations import UserProject
+from ..models.userRelations import UserProject, UserTeam
 from ..api_throttles import *
 
 
@@ -45,15 +46,21 @@ class DocumentDetailView(generics.GenericAPIView):
     def put(self, request, documentId):
         # try:
             document = get_object_or_404(Document, pk=documentId)
-            # will open permission for when the person is the mainAdmin or admin of the team
-            if not request.user.is_staff and request.user != Document.createdBy:
-                return Response({"message": "Unauthorized for update feed"}, status=status.HTTP_401_UNAUTHORIZED)
-            serializer = self.get_serializer(instance=document, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(updatedAt=timezone.now())
-            data = serializer.data
-            data['message'] = "Update Document Successfully"
-            return Response(data, status=status.HTTP_200_OK)
+            isMember = UserTeam.objects.get(team=document.belongTo.belongTo, user =request.user)
+            # if not request.user.is_staff and request.user != Document.createdBy:
+            #     return Response({"message": "Unauthorized for Update Document"}, status=status.HTTP_401_UNAUTHORIZED)
+            if isMember:
+                data = request.data
+                # data['content'].replace('\n', '\\n')
+                # print("\n\njson parse\n", json.loads(data['content']),  "\ntype:", type(json.loads(data['content'])))
+                serializer = self.get_serializer(instance=document, data=data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(updatedAt=timezone.now())
+                data = serializer.data
+                data['message'] = "Update Document Successfully"
+                return Response(data, status=status.HTTP_200_OK)
+            else :
+                return Response({"message": "Unauthorized for Update Document"}, status=status.HTTP_401_UNAUTHORIZED)
         # except:
         #     return Response({"message": "Update Document Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -83,12 +90,16 @@ class DocumentCreateView(generics.CreateAPIView):
     @swagger_auto_schema(operation_summary="Create Document")
     def post(self, request, projectId):
         # try:
-            isMember = UserProject.objects.get(project=projectId, user=request.user)
+            # isMember = UserProject.objects.get(project=projectId, user=request.user)
+            project = get_object_or_404(Project, pk=projectId)
+            isMember = UserTeam.objects.get(team=project.belongTo, user=request.user)
             if isMember:
-                if not isMember.isAdmin and not isMember.isMainAdmin:
-                    return Response({"message": "Unauthorized to Create Document in Project"}, status=status.HTTP_403_FORBIDDEN)
+                # if not isMember.isAdmin and not isMember.isMainAdmin:
+                #     return Response({"message": "Unauthorized to Create Document in Project"}, status=status.HTTP_403_FORBIDDEN)
                 project = get_object_or_404(Project, pk=projectId)
-                serializer = self.get_serializer(data=request.data)
+                data = request.data
+                # data['content'].replace('\n', '\\n')
+                serializer = self.get_serializer(data=data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save(createdBy=request.user, belongTo=project)
                 data = serializer.data
