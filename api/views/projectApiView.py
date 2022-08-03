@@ -67,8 +67,8 @@ class ProjectDetailView(generics.GenericAPIView):
     def delete(self, request, projectId):
         # try:
             project = get_object_or_404(Project, pk=projectId)
-            isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user,isAdmin=True).first()
-            if isMember
+            isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user).first()
+            if isMember:
                 project.delete()
                 return Response({"message": "Delete Project Successfully"}, status=status.HTTP_200_OK)
             else:
