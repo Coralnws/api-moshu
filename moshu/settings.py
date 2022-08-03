@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 import environ
 from datetime import timedelta  # for auth token lifetimes
 
@@ -34,7 +35,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'stagging-api-moshu.cheangfou.com', 'www.stagging-api-moshu.cheangfou.com', 'uwsgimoshu']
 
 
 # Application definition
@@ -124,25 +125,25 @@ WSGI_APPLICATION = 'moshu.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 # For development environment, will seperate dev and prod config into different file later
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # For later use when intergrate with MYSQL
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': env('DB_NAME'),
-#         'USER': env('DB_USER'),
-#         'PASSWORD': env('DB_PASSWORD'),
-#         'HOST': env('DB_HOST'),
-#         'PORT': env('DB_PORT'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
+    }
+}
 
 
 # Password validation
@@ -221,6 +222,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
