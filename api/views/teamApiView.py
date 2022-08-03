@@ -31,17 +31,17 @@ class TeamDetailView(generics.GenericAPIView):
     # Get Team Detail By Id
     @swagger_auto_schema(operation_summary="Get Team Detail By Id")
     def get(self, request, teamId):
-        try:
+        # try:
             team = get_object_or_404(Team, pk=teamId)
             members = UserTeam.objects.filter(team=teamId).count()
             team.members = members
-            serializer = self.ger_serializer(instance=team)
+            serializer = self.get_serializer(instance=team)
             data = serializer.data
             data['message'] = "Get Team Detail Successfully"
             return Response(data, status=status.HTTP_200_OK)
 
-        except:
-            return Response({"message": "Get Team Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
+        # except:
+        #     return Response({"message": "Get Team Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
     # Update Team By Id
     @swagger_auto_schema(operation_summary="Update Team By Id")
@@ -50,7 +50,7 @@ class TeamDetailView(generics.GenericAPIView):
 
         if admin:
             team = get_object_or_404(Team, pk=teamId)
-            serializer = self.ger_serializer(instance=team, data=request.data)
+            serializer = self.get_serializer(instance=team, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(updatedAt=timezone.now())
             data = serializer.data
