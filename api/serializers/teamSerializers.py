@@ -16,7 +16,6 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
             'createdBy': {'read_only': True},
-            'category': {'read_only': True}
         }
 
 
@@ -64,7 +63,7 @@ class UserTeamDetailSerializer(serializers.ModelSerializer):
         model = UserTeam
         fields = '__all__'
         extra_kwargs = {
-            'group': {'read_only': True},
+            'team': {'read_only': True},
             'user': {'read_only': True},
             'createdAt': {'read_only': True},
             'updatedAt': {'read_only': True},
@@ -76,7 +75,7 @@ Add userTeam relation
 class UserTeamJoinSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserTeam
-        fields = ['user','group','createdAt']
+        fields = ['user','team']
 
     def validate(self, attrs):
         return super().validate(attrs)

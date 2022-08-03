@@ -18,3 +18,8 @@ class InvitationSerializer(serializers.ModelSerializer):
         'createdAt': {'read_only': True},
         'updatedAt': {'read_only': True},
     }
+
+class ReplyInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invitation
+        fields = ['id']

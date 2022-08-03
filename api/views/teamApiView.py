@@ -62,7 +62,7 @@ class TeamDetailView(generics.GenericAPIView):
     # Delete Team By Id
     @swagger_auto_schema(operation_summary="Delete Team By Id")
     def delete(self, request, teamId):
-        isMainAdmin = UserTeam.objects.get(team=teamId, user=request.user, isMainAdmin=True).first()
+        isMainAdmin = UserTeam.objects.filter(team=teamId, user=request.user, isMainAdmin=True).first()
         if isMainAdmin:
             try:
                 team = get_object_or_404(Team, pk=teamId)
@@ -100,25 +100,26 @@ class InviteView(generics.GenericAPIView):
     serializer_class = InvitationSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    @swagger_auto_schema(operation_summary="Invite,userId:target")
-    def post(self,request,teamId,userId):  #userId is user who wish to invite
+    @swagger_auto_schema(operation_summary="Invite,user:target")
+    def post(self,request):  #userId is user who wish to invite
         try:
-            team = get_object_or_404(Team, pk=teamId)
+            team = get_object_or_404(Team, pk=request.data['team'])
             isAdmin = UserTeam.objects.filter(team=team, user=request.user,isAdmin=True)
-            isMember = UserTeam.objects.filter(team=team, user=userId)
-            userInvite = get_object_or_404(CustomUser, pk=userId)
+            isMember = UserTeam.objects.filter(team=team, user=request.data['user'])
+            userInvite = get_object_or_404(CustomUser, pk=request.data['user'])
             if not isAdmin:
                 return Response({"message": "You are not admin of this team."}, status=status.HTTP_403_FORBIDDEN)
             
             if isMember:
                 return Response({"message": "User is team member."}, status=status.HTTP_403_FORBIDDEN)
 
-            record = Invitation.objects.filter(team=teamId, user=userInvite).first()
-            data = {'user':userInvite.id,'team':team.id,'invitedBy':request.user.id}
+
+            record = Invitation.objects.filter(team=team, user=userInvite).first()
+            data = {'user':userInvite.id,'team':team.id,'invitedBy':request.user.id,'result':0}
             if record:
                 serializer = self.get_serializer(instance=record,data=data)
             else:
-                serializer = self.get_serializer(data=data)
+                serializer = self.serializer_class(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             data = serializer.data
@@ -131,29 +132,30 @@ class InviteView(generics.GenericAPIView):
 POST:Reply Invitation
 """
 class ReplyTeamInvitationView(generics.GenericAPIView):
-    serializer_class = UserTeamJoinSerializer
+    serializer_class = ReplyInvitationSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     @swagger_auto_schema(operation_summary="Reply invitation,result: 1-accept,2-decline")
-    def post(self,request,invitationId,result):
-        try:
+    def put(self,request,invitationId,result):
+        #try:
             invitation = get_object_or_404(Invitation, pk=invitationId)
+            
+            #if invitation.user == request.user and not invitation.result:
             if not invitation.result:
                 if result == 1:
                     invitation.result = result
-                    data = {'user':request.user.id,'team':invitation.team.id}
-                    serializer = self.get_serializer(data=data)
-                    serializer.is_valid(raise_exception=True)
-                    serializer.save()
-                    data = serializer.data
-                    data['message'] = "Accept Invitation,Join Team Successfully."
-                    return Response(data, status=status.HTTP_201_CREATED)
+                    invitation.save()
+                    newUserTeam = UserTeam(team=invitation.team, user=invitation.user)
+                    newUserTeam.save()
+                    return Response({"message": "Accept Invitation,Join Team Successfully."}, status=status.HTTP_201_CREATED)
                 if result == 2:
                     invitation.result = result
+                    invitation.save()
                     return Response({"message": "Refuse Invitation Successfully"}, status=status.HTTP_200_OK)
+            return Response({"message": "Invitation was replied/Not User."}, status=status.HTTP_200_OK)
             
-        except:
-            return Response({"message": "Reply Invitation Failed"}, status=status.HTTP_400_BAD_REQUEST)
+        #except:
+           # return Response({"message": "Reply Invitation Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -188,7 +190,7 @@ class RemoveMemberView(generics.GenericAPIView):
 
     @swagger_auto_schema(operation_summary="Remove Team Member,userId:target")
     def delete(self, request, teamId,userId): #userId: member to remove
-        isAdmin = UserTeam.objects.get(team=teamId, user=request.user, isAdmin=True).first()
+        isAdmin = UserTeam.objects.filter(team=teamId, user=request.user, isAdmin=True).first()
         if isAdmin:
             try:
                 userTeam = get_object_or_404(UserTeam, team=teamId,user=userId)
@@ -207,16 +209,16 @@ class SetAdminView(generics.GenericAPIView):
 
     @swagger_auto_schema(operation_summary="Set Team Admin Role,userId=target")
     def put(self,request,teamId,userId):
-        userAdmin = get_object_or_404(UserTeam, team=teamId,user=request.user)  #team admin
+        userAdmin = UserTeam.objects.filter(team=teamId, user=request.user,isAdmin=True)
 
-        if userAdmin.isAdmin:
+        if userAdmin:
             userTarget = get_object_or_404(UserTeam, team=teamId, user=userId)
             serializer = self.serializer_class(instance=userTarget,data={'isAdmin':True})
             serializer.is_valid(raise_exception=True)
             serializer.save(updatedAt=timezone.now())
-            data = serializer.data
-            data['message'] = "Set Admin Successfully"
-            return Response(data, status=status.HTTP_200_OK)
+            #data = serializer.data
+            #data['message'] = "Set Admin Successfully"
+            return Response({"message": "Set Admin Successfully"}, status=status.HTTP_200_OK)
             
         else:
             return Response({"message": "No Permission."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -231,16 +233,16 @@ class RemoveAdminView(generics.GenericAPIView):
 
     @swagger_auto_schema(operation_summary="Remove Team Admin Role,userId=target")
     def put(self,request,teamId,userId):
-        userAdmin = get_object_or_404(UserTeam, team=teamId,user=request.user)  #team admin
+        userAdmin = UserTeam.objects.filter(team=teamId, user=request.user,isMainAdmin=True)
 
-        if userAdmin.isMainAdmin:
+        if userAdmin:
             userTarget = get_object_or_404(UserTeam, team=teamId, user=userId)
             serializer = self.serializer_class(instance=userTarget,data={'isAdmin':False})
             serializer.is_valid(raise_exception=True)
             serializer.save(updatedAt=timezone.now())
-            data = serializer.data
-            data['message'] = "Remove Admin Successfully"
-            return Response(data, status=status.HTTP_200_OK)
+            #data = serializer.data
+            #data['message'] = "Remove Admin Successfully"
+            return Response({"Remove Admin Successfully"}, status=status.HTTP_200_OK)
             
         else:
             return Response({"message": "No Permission."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -257,10 +259,10 @@ class TeamMemberView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     @swagger_auto_schema(operation_summary="Get All Team Member,?type=main/admin/normal")
-    def get_queryset(self, request):
+    def get_queryset(self):
         team = self.kwargs['teamId']
         type = self.request.GET.get('type')  #main/admin/normal
-        isMember = UserTeam.objects.get(team=team, user=request.user)
+        isMember = UserTeam.objects.get(team=team, user=self.request.user)
         if isMember is None:
             return Response({"message": "Not Team Member"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -280,12 +282,12 @@ class TeamMemberView(generics.ListAPIView):
         for member in allMember:
             admin = UserTeam.objects.filter(user=member, team=team).first()
             if admin.isMainAdmin:
-                member.isAdmin = 0
+                member.position = 'M'
             elif admin.isAdmin:
-                member.isAdmin = 1
+                member.position = 'A'
             else:
-                member.isAdmin = 2
-        ordered = sorted(allMember, key=operator.attrgetter('isAdmin'))
+                member.position = 'N'
+        ordered = sorted(allMember, key=operator.attrgetter('position'))
         return ordered
 
 
@@ -306,11 +308,14 @@ class ShowUserTeamView(generics.ListAPIView):
             team.members = members
             team.joinedAt = userTeam.createdAt
             if userTeam.isMainAdmin:
-                team.position="MainAdmin/Creator"
+                #team.position="MainAdmin/Creator"
+                team.position='M'
             elif userTeam.isAdmin:
-                team.position="Admin"
+                #team.position="Admin"
+                team.position='A'
             else:
-                team.position="Normal"
+                #team.position="Normal"
+                team.position='N'
         ordered = sorted(allTeams, key=operator.attrgetter('joinedAt'), reverse=False)
         return ordered
 
