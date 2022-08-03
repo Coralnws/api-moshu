@@ -46,7 +46,7 @@ class DocumentDetailView(generics.GenericAPIView):
     def put(self, request, documentId):
         # try:
             document = get_object_or_404(Document, pk=documentId)
-            isMember = UserTeam.objects.get(team=document.belongTo.belongTo, user =request.user)
+            isMember = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user).first()
             # if not request.user.is_staff and request.user != Document.createdBy:
             #     return Response({"message": "Unauthorized for Update Document"}, status=status.HTTP_401_UNAUTHORIZED)
             if isMember:
@@ -70,7 +70,8 @@ class DocumentDetailView(generics.GenericAPIView):
     def delete(self, request, documentId):
         # try:
             document = get_object_or_404(Document, pk=documentId)
-            if request.user == document.createdBy or request.user.is_staff:
+            isAdmin = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user,isAdmin=True).first()
+            if request.user == document.createdBy or request.user.is_staff or isAdmin:
                 document.delete()
                 return Response({"message": "Delete Document Successfully"}, status=status.HTTP_200_OK)
             else:
@@ -122,9 +123,8 @@ class DocumentListView(generics.ListAPIView):
     # Get All Documents
     @swagger_auto_schema(operation_summary="Get All Documents")
     def get_queryset(self):
-        orderBy = self.request.GET.get('orderBy')
         search = self.request.GET.get('search')
-        group = self.request.GET.get('belongTo')
+        project = self.request.GET.get('belongTo')
         createdBy = self.request.GET.get('createdBy')
 
         filter = Q()
@@ -133,8 +133,8 @@ class DocumentListView(generics.ListAPIView):
             for term in searchTerms:
                 filter &= Q(title__icontains=term) | Q(content__icontains=term) | Q(description__icontains=term) | Q(createdBy__username__icontains=term)
 
-        if group is not None:
-            filter &= Q(belongTo=group)
+        if project is not None:
+            filter &= Q(belongTo=project)
 
         if createdBy is not None:
             filter &= Q(createdBy = createdBy)

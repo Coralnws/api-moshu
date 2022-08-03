@@ -252,7 +252,7 @@ class RemoveAdminView(generics.GenericAPIView):
 ########################## List ####################################
 ## Inside
 """
-GET:Show all member + show member count
+GET:Show all member
 """
 class TeamMemberView(generics.ListAPIView):
     serializer_class = ListMemberSerializer
@@ -282,11 +282,11 @@ class TeamMemberView(generics.ListAPIView):
         for member in allMember:
             admin = UserTeam.objects.filter(user=member, team=team).first()
             if admin.isMainAdmin:
-                member.position = 'M'
+                member.position = '0'
             elif admin.isAdmin:
-                member.position = 'A'
+                member.position = '1'
             else:
-                member.position = 'N'
+                member.position = '2'
         ordered = sorted(allMember, key=operator.attrgetter('position'))
         return ordered
 

@@ -44,7 +44,12 @@ Serializer class for Creating Project
 class ProjectCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id','title', 'description']
+        fields = ['id','title', 'description','createdBy','belongTo']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'createdBy': {'read_only': True},
+            'belongTo': {'read_only': True},
+        }
         
     def validate(self, attrs):
         return super().validate(attrs)

@@ -121,10 +121,10 @@ Serializer for List All Users
 class ListUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'profile']
+        fields = ['id', 'username', 'realname','email', 'profile']
 
 class ListMemberSerializer(serializers.ModelSerializer):
-    position = serializers.CharField()
+    position = serializers.IntegerField()
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'profile','position']
+        fields = ['id', 'username', 'realname','email', 'profile','position']

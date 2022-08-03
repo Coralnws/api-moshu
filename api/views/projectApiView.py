@@ -45,7 +45,7 @@ class ProjectDetailView(generics.GenericAPIView):
     def put(self, request, projectId):
         # try:
             project = get_object_or_404(Project, pk=projectId)
-            isMember = UserTeam.objects.get(team=project.belongTo.id, user=request.user)
+            isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user).first()
             # will open permission for when the person is the mainAdmin or admin of the team
             # if not request.user.is_staff and request.user != project.createdBy:
             #     return Response({"message": "Unauthorized for update feed"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -57,7 +57,7 @@ class ProjectDetailView(generics.GenericAPIView):
                 data['message'] = "Update Project Successfully"
                 return Response(data, status=status.HTTP_200_OK)
             else:
-                return Response({"message": "Unauthorized for update feed"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"message": "Unauthorized for update Project"}, status=status.HTTP_401_UNAUTHORIZED)
         # except:
         #     return Response({"message": "Update Project Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -67,7 +67,8 @@ class ProjectDetailView(generics.GenericAPIView):
     def delete(self, request, projectId):
         # try:
             project = get_object_or_404(Project, pk=projectId)
-            if request.user == project.createdBy or request.user.is_staff:
+            isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user,isAdmin=True).first()
+            if isMember
                 project.delete()
                 return Response({"message": "Delete Project Successfully"}, status=status.HTTP_200_OK)
             else:
@@ -116,9 +117,8 @@ class ProjectListView(generics.ListAPIView):
     # Get All Projects
     @swagger_auto_schema(operation_summary="Get All Projects")
     def get_queryset(self):
-        orderBy = self.request.GET.get('orderBy')
         search = self.request.GET.get('search')
-        group = self.request.GET.get('belongTo')
+        team = self.request.GET.get('belongTo')
         createdBy = self.request.GET.get('createdBy')
 
         filter = Q()
@@ -127,8 +127,8 @@ class ProjectListView(generics.ListAPIView):
             for term in searchTerms:
                 filter &= Q(title__icontains=term) | Q(description__icontains=term) | Q(createdBy__username__icontains=term)
 
-        if group is not None:
-            filter &= Q(belongTo=group)
+        if team is not None:
+            filter &= Q(belongTo=team)
 
         if createdBy is not None:
             filter &= Q(createdBy = createdBy)
