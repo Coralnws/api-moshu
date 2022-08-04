@@ -31,12 +31,16 @@ class ProjectDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Get Project Detail By Id")
     def get(self, request, projectId):
         # try:
-            project = get_object_or_404(Project, pk=projectId)
+        project = get_object_or_404(Project, pk=projectId,isDeleted=False)
+        isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user).first()
+        if isMember:
             
             serializer = self.get_serializer(instance=project)
             data = serializer.data
             data['message'] = "Get Project Detail Successfully"
             return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Not team member"}, status=status.HTTP_403_FORBIDDEN)
         # except:
         #     return Response({"message": "Get Project Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -44,7 +48,7 @@ class ProjectDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Update Project By Id")
     def put(self, request, projectId):
         # try:
-            project = get_object_or_404(Project, pk=projectId)
+            project = get_object_or_404(Project, pk=projectId,isDeleted=False)
             isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user).first()
             # will open permission for when the person is the mainAdmin or admin of the team
             # if not request.user.is_staff and request.user != project.createdBy:
@@ -66,10 +70,27 @@ class ProjectDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Delete Project By Id")
     def delete(self, request, projectId):
         # try:
-            project = get_object_or_404(Project, pk=projectId)
+            project = get_object_or_404(Project, pk=projectId,isDeleted=False)
             isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user).first()
             if isMember:
                 project.delete()
+
+                '''
+                project.isDeleted=True
+                project.save()
+                deleteRecord = Deletion(title=project.title,deletedBy=request.user,type=1,belongTo=project.belongTo.belongTo)
+                deleteRecord.save()
+                diagram.deleteRecord=deleteRecord
+                allDocuments = Document.objects.filter(belongTo=project)
+                for document in allDocuments:
+                    document.isDeleted=True
+                    document.deleteRecord = deleteRecord
+                allDiagrams = Diagram.objects.filter(belongTo=project)
+                for diagram in allDiagrams:
+                    diagram.isDeleted=True
+                    diagram.deleteRecord = deleteRecord
+                
+                '''
                 return Response({"message": "Delete Project Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Project"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -122,6 +143,7 @@ class ProjectListView(generics.ListAPIView):
         createdBy = self.request.GET.get('createdBy')
 
         filter = Q()
+
         if search is not None:
             searchTerms = search.split(' ')
             for term in searchTerms:
@@ -133,5 +155,6 @@ class ProjectListView(generics.ListAPIView):
         if createdBy is not None:
             filter &= Q(createdBy = createdBy)
 
+        filter &= Q(isDeleted=False)
         allProjects = Project.objects.filter(filter).order_by('-createdAt')
         return allProjects; # will implement ordered By soon

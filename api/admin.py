@@ -4,8 +4,10 @@ from .models.users import CustomUser
 from .models.teams import Team
 from .models.projects import Project
 from .models.documents import Document
+from .models.diagrams import *
 from .models.invitations import Invitation
 from .models.userRelations import *
+
 
 # Register your models here.
 
@@ -30,7 +32,11 @@ class UserTeamAdminConfig(admin.ModelAdmin):
 class UserProjectAdminConfig(admin.ModelAdmin):
     list_display = ('project', 'user', 'isAdmin', 'isMainAdmin')
 
+class ImageConfig(admin.ModelAdmin):
+    list_display = ('id','img')
 
+class DiagramConfig(admin.ModelAdmin):
+    list_display = ('id','title','belongTo')
 
 admin.site.register(CustomUser, UserAdminConfig)
 admin.site.register(Team, TeamAdminConfig)
@@ -39,3 +45,5 @@ admin.site.register(Document, DocumentAdminConfig)
 admin.site.register(Invitation, InvitationAdminConfig)
 admin.site.register(UserTeam, UserTeamAdminConfig)
 admin.site.register(UserProject, UserProjectAdminConfig)
+admin.site.register(Image, ImageConfig)
+admin.site.register(Diagram, DiagramConfig)

@@ -32,12 +32,15 @@ class DocumentDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Get Document Detail By Id")
     def get(self, request, documentId):
         # try:
-            document = get_object_or_404(Document, pk=documentId)
-            
-            serializer = self.get_serializer(instance=document)
-            data = serializer.data
-            data['message'] = "Get Document Detail Successfully"
-            return Response(data, status=status.HTTP_200_OK)
+            document = get_object_or_404(Document, pk=documentId,isDeleted=False)
+            isMember = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user).first()
+            if isMember:
+                serializer = self.get_serializer(instance=document)
+                data = serializer.data
+                data['message'] = "Get Document Detail Successfully"
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Not Team Member"}, status=status.HTTP_403_FORBIDDEN)
         # except:
         #     return Response({"message": "Get Document Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,7 +48,7 @@ class DocumentDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Update Document By Id")
     def put(self, request, documentId):
         # try:
-            document = get_object_or_404(Document, pk=documentId)
+            document = get_object_or_404(Document, pk=documentId,isDeleted=False)
             isMember = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user).first()
             # if not request.user.is_staff and request.user != Document.createdBy:
             #     return Response({"message": "Unauthorized for Update Document"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -69,10 +72,15 @@ class DocumentDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Delete Document By Id")
     def delete(self, request, documentId):
         # try:
-            document = get_object_or_404(Document, pk=documentId)
+            document = get_object_or_404(Document, pk=documentId,isDeleted=False)
             isAdmin = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user,isAdmin=True).first()
             if request.user == document.createdBy or request.user.is_staff or isAdmin:
-                document.delete()
+                #document.delete()
+                document.isDeleted=True
+                document.save()
+
+                deleteRecord = Deletion(deletedBy=request.user,type=1,belongTo=document.belongTo.belongTo)
+                
                 return Response({"message": "Delete Document Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Document"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -139,5 +147,6 @@ class DocumentListView(generics.ListAPIView):
         if createdBy is not None:
             filter &= Q(createdBy = createdBy)
 
+        filter &= Q(isDeleted=False)
         allDocuments = Document.objects.filter(filter).order_by('-createdAt')
         return allDocuments; # will implement ordered By soon
