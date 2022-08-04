@@ -88,7 +88,7 @@ class ProjectCreateView(generics.CreateAPIView):
     @swagger_auto_schema(operation_summary="Create Project")
     def post(self, request, teamId):
         # try:
-            isMember = UserTeam.objects.get(team=teamId, user=request.user)
+            isMember = UserTeam.objects.filter(team=teamId, user=request.user).first()
             # print("isMember", isMember)
             if isMember:
                 # if not isMember.isAdmin and not isMember.isMainAdmin:
