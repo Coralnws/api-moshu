@@ -76,7 +76,7 @@ class ProjectDetailView(generics.GenericAPIView):
             project = get_object_or_404(Project, pk=projectId,isDeleted=False)
             isMember = UserTeam.objects.filter(team=project.belongTo.id, user=request.user).first()
             if isMember:
-                project.delete()
+                #project.delete()
 
                 project.isDeleted=True
                 project.save()

@@ -12,7 +12,7 @@ class Document(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=150)
     description = models.TextField(max_length=10000)
-    content = models.JSONField()
+    content = models.TextField(max_length=50000)
     createdBy = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=False, blank=False)
     belongTo = models.ForeignKey("Project", on_delete=models.CASCADE, null=False, blank=False)
     deleteRecord = models.ForeignKey("Deletion", on_delete=models.SET_NULL, null=True, blank=True)
