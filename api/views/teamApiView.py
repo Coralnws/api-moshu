@@ -31,17 +31,20 @@ class TeamDetailView(generics.GenericAPIView):
     # Get Team Detail By Id
     @swagger_auto_schema(operation_summary="Get Team Detail By Id")
     def get(self, request, teamId):
-        # try:
-            team = get_object_or_404(Team, pk=teamId)
-            members = UserTeam.objects.filter(team=teamId).count()
-            team.members = members
-            serializer = self.get_serializer(instance=team)
-            data = serializer.data
-            data['message'] = "Get Team Detail Successfully"
-            return Response(data, status=status.HTTP_200_OK)
-
-        # except:
-        #     return Response({"message": "Get Team Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            isMember= UserTeam.objects.filter(team=teamId,user=request.user).first()
+            if isMember:
+                team = get_object_or_404(Team, pk=teamId)
+                members = UserTeam.objects.filter(team=teamId).count()
+                team.members = members
+                serializer = self.get_serializer(instance=team)
+                data = serializer.data
+                data['message'] = "Get Team Detail Successfully"
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Not team member"}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "Get Team Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
     # Update Team By Id
     @swagger_auto_schema(operation_summary="Update Team By Id")
@@ -102,11 +105,12 @@ class InviteView(generics.GenericAPIView):
 
     @swagger_auto_schema(operation_summary="Invite,user:target")
     def post(self,request):  #userId is user who wish to invite
-        try:
-            team = get_object_or_404(Team, pk=request.data['team'])
+        #try:
+            team = get_object_or_404(Team, pk=request.data['teamId']) #id
+            userInvite = get_object_or_404(CustomUser, username=request.data['user'])
             isAdmin = UserTeam.objects.filter(team=team, user=request.user,isAdmin=True)
-            isMember = UserTeam.objects.filter(team=team, user=request.data['user'])
-            userInvite = get_object_or_404(CustomUser, pk=request.data['user'])
+            isMember = UserTeam.objects.filter(team=team, user=userInvite)
+            
             if not isAdmin:
                 return Response({"message": "You are not admin of this team."}, status=status.HTTP_403_FORBIDDEN)
             
@@ -114,8 +118,11 @@ class InviteView(generics.GenericAPIView):
                 return Response({"message": "User is team member."}, status=status.HTTP_403_FORBIDDEN)
 
 
-            record = Invitation.objects.filter(team=team, user=userInvite).first()
-            data = {'user':userInvite.id,'team':team.id,'invitedBy':request.user.id,'result':0}
+            record = Invitation.objects.filter(teamId=team, user=userInvite.username).first()
+            
+            data = {'user':userInvite.username,'team':team.teamName,'teamId':team.id,'invitedBy':request.user.username,'result':0}
+            if team.img:
+                data['teamImg'] = team.thumbnail
             if record:
                 serializer = self.get_serializer(instance=record,data=data)
             else:
@@ -125,8 +132,8 @@ class InviteView(generics.GenericAPIView):
             data = serializer.data
             data['message'] = "Invitation Sent."
             return Response(data, status=status.HTTP_201_CREATED)
-        except:
-            return Response({"message": "Failed to invite."}, status=status.HTTP_400_BAD_REQUEST)
+        #except:
+         #   return Response({"message": "Failed to invite."}, status=status.HTTP_400_BAD_REQUEST)
 
 """
 POST:Reply Invitation
@@ -145,7 +152,8 @@ class ReplyTeamInvitationView(generics.GenericAPIView):
                 if result == 1:
                     invitation.result = result
                     invitation.save()
-                    newUserTeam = UserTeam(team=invitation.team, user=invitation.user)
+                    user = get_object_or_404(CustomUser, username=invitation.user)
+                    newUserTeam = UserTeam(team=invitation.teamId, user=user)
                     newUserTeam.save()
                     return Response({"message": "Accept Invitation,Join Team Successfully."}, status=status.HTTP_201_CREATED)
                 if result == 2:
@@ -252,7 +260,7 @@ class RemoveAdminView(generics.GenericAPIView):
 ########################## List ####################################
 ## Inside
 """
-GET:Show all member + show member count
+GET:Show all member
 """
 class TeamMemberView(generics.ListAPIView):
     serializer_class = ListMemberSerializer
@@ -262,7 +270,7 @@ class TeamMemberView(generics.ListAPIView):
     def get_queryset(self):
         team = self.kwargs['teamId']
         type = self.request.GET.get('type')  #main/admin/normal
-        isMember = UserTeam.objects.get(team=team, user=self.request.user)
+        isMember = UserTeam.objects.filter(team=team, user=self.request.user).first()
         if isMember is None:
             return Response({"message": "Not Team Member"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -282,11 +290,11 @@ class TeamMemberView(generics.ListAPIView):
         for member in allMember:
             admin = UserTeam.objects.filter(user=member, team=team).first()
             if admin.isMainAdmin:
-                member.position = 'M'
+                member.position = '0'
             elif admin.isAdmin:
-                member.position = 'A'
+                member.position = '1'
             else:
-                member.position = 'N'
+                member.position = '2'
         ordered = sorted(allMember, key=operator.attrgetter('position'))
         return ordered
 
@@ -329,7 +337,7 @@ class ListInvitationView(generics.ListAPIView):
 
     @swagger_auto_schema(operation_summary="Get All Pending Invitation")
     def get_queryset(self):
-        allInvitations = Invitation.objects.filter(user=self.request.user,result=0)
+        allInvitations = Invitation.objects.filter(user=self.request.user.username,result=0)
         ordered = sorted(allInvitations, key=operator.attrgetter('createdAt'), reverse=False)
         return ordered
 

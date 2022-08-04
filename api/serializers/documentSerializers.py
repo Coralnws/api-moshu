@@ -60,7 +60,7 @@ class ListDocumentSerializer(serializers.ModelSerializer):
     # response = serializers.CharField()
     class Meta:
         model = Document
-        fields = ['id', 'title', 'description', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title', 'description','content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
 
 
 # class ListTeamDocumentSerializer(serializers.ModelSerializer):

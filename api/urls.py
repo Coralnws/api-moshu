@@ -3,6 +3,7 @@ from api.views.userApiView import *
 from api.views.teamApiView import *
 from api.views.projectApiView import *
 from api.views.documentApiView import *
+from api.views.diagramApiView import *
 
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_simplejwt.views import (
@@ -38,7 +39,13 @@ urlpatterns = [
     path('project/<uuid:projectId>', ProjectDetailView.as_view(), name="project_detail"),
     path('project/create/<uuid:teamId>', ProjectCreateView.as_view(), name="create_project"),
     path('project/list', ProjectListView.as_view(), name="project_list"),
+
+    path('image/', UploadImageView.as_view(), name="upload_image"),
     
+    #Diagram
+    path('diagram/create/<uuid:projectId>', DiagramCreateView.as_view(), name="diagram_create"),
+    path('diagram/<uuid:diagramId>', DiagramDetailView.as_view(), name="diagram_detail"),
+    path('diagram/list', DiagramListView.as_view(), name="diagram_list"),
 
     # Document
     path('document/<uuid:documentId>', DocumentDetailView.as_view(), name="document_detail"),

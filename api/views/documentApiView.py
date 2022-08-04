@@ -32,12 +32,15 @@ class DocumentDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Get Document Detail By Id")
     def get(self, request, documentId):
         # try:
-            document = get_object_or_404(Document, pk=documentId)
-            
-            serializer = self.get_serializer(instance=document)
-            data = serializer.data
-            data['message'] = "Get Document Detail Successfully"
-            return Response(data, status=status.HTTP_200_OK)
+            document = get_object_or_404(Document, pk=documentId,isDeleted=False)
+            isMember = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user).first()
+            if isMember:
+                serializer = self.get_serializer(instance=document)
+                data = serializer.data
+                data['message'] = "Get Document Detail Successfully"
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Not Team Member"}, status=status.HTTP_403_FORBIDDEN)
         # except:
         #     return Response({"message": "Get Document Detail Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,8 +48,8 @@ class DocumentDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Update Document By Id")
     def put(self, request, documentId):
         # try:
-            document = get_object_or_404(Document, pk=documentId)
-            isMember = UserTeam.objects.get(team=document.belongTo.belongTo, user =request.user)
+            document = get_object_or_404(Document, pk=documentId,isDeleted=False)
+            isMember = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user).first()
             # if not request.user.is_staff and request.user != Document.createdBy:
             #     return Response({"message": "Unauthorized for Update Document"}, status=status.HTTP_401_UNAUTHORIZED)
             if isMember:
@@ -69,9 +72,15 @@ class DocumentDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Delete Document By Id")
     def delete(self, request, documentId):
         # try:
-            document = get_object_or_404(Document, pk=documentId)
-            if request.user == document.createdBy or request.user.is_staff:
-                document.delete()
+            document = get_object_or_404(Document, pk=documentId,isDeleted=False)
+            isAdmin = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user,isAdmin=True).first()
+            if request.user == document.createdBy or request.user.is_staff or isAdmin:
+                #document.delete()
+                document.isDeleted=True
+                document.save()
+
+                deleteRecord = Deletion(deletedBy=request.user,type=1,belongTo=document.belongTo.belongTo)
+                
                 return Response({"message": "Delete Document Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Document"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -122,9 +131,8 @@ class DocumentListView(generics.ListAPIView):
     # Get All Documents
     @swagger_auto_schema(operation_summary="Get All Documents")
     def get_queryset(self):
-        orderBy = self.request.GET.get('orderBy')
         search = self.request.GET.get('search')
-        group = self.request.GET.get('belongTo')
+        project = self.request.GET.get('belongTo')
         createdBy = self.request.GET.get('createdBy')
 
         filter = Q()
@@ -133,11 +141,12 @@ class DocumentListView(generics.ListAPIView):
             for term in searchTerms:
                 filter &= Q(title__icontains=term) | Q(content__icontains=term) | Q(description__icontains=term) | Q(createdBy__username__icontains=term)
 
-        if group is not None:
-            filter &= Q(belongTo=group)
+        if project is not None:
+            filter &= Q(belongTo=project)
 
         if createdBy is not None:
             filter &= Q(createdBy = createdBy)
 
+        filter &= Q(isDeleted=False)
         allDocuments = Document.objects.filter(filter).order_by('-createdAt')
         return allDocuments; # will implement ordered By soon
