@@ -15,7 +15,6 @@ class InvitationSerializer(serializers.ModelSerializer):
     extra_kwargs = {
         'teamId': {'read_only': True},
         'user': {'read_only': True},
-        'invitedBy': {'read_only': False},
         'createdAt': {'read_only': True},
         'updatedAt': {'read_only': True},
     }

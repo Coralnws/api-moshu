@@ -18,7 +18,7 @@ class Invitation(models.Model):
     team = models.CharField(max_length=150,null=True)
     teamId = models.ForeignKey("Team", on_delete=models.CASCADE, null=True, blank=False)
     teamImg = models.ImageField(upload_to="uploads/teams", blank=True)
-    invitedBy = models.CharField(max_length=150)
+    invitedBy = models.CharField(max_length=150,null=True)
     result = models.IntegerField(choices=RESULT,null=False, blank=False, default=0)
     createdAt = models.DateTimeField(default=timezone.now)
     updatedAt = models.DateTimeField(default=timezone.now)
