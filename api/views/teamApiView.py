@@ -107,7 +107,7 @@ class InviteView(generics.GenericAPIView):
     def post(self,request):  #userId is user who wish to invite
         #try:
             team = get_object_or_404(Team, pk=request.data['teamId']) #id
-            userInvite = get_object_or_404(CustomUser, username=request.data['user'])
+            userInvite = CustomUser.objects.filter(username=request.data['user']).first()
             isAdmin = UserTeam.objects.filter(team=team, user=request.user,isAdmin=True)
             isMember = UserTeam.objects.filter(team=team, user=userInvite)
             
@@ -117,7 +117,9 @@ class InviteView(generics.GenericAPIView):
             if isMember:
                 return Response({"message": "User is team member."}, status=status.HTTP_403_FORBIDDEN)
 
-
+            if not userInvite:
+                data={'code':2001,"message": "User Not Exist."}
+                return Response(data,status=status.HTTP_403_FORBIDDEN)
             record = Invitation.objects.filter(teamId=team, user=userInvite.username).first()
             
             data = {'user':userInvite.username,'team':team.teamName,'teamId':team.id,'invitedBy':request.user.username,'result':0}

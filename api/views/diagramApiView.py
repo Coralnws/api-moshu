@@ -106,7 +106,7 @@ class DiagramCreateView(generics.CreateAPIView):
                 # if not isMember.isAdmin and not isMember.isMainAdmin:
                 #     return Response({"message": "Unauthorized to Create Diagram in Project"}, status=status.HTTP_403_FORBIDDEN)
             project = get_object_or_404(Project, pk=projectId)
-            print(type(request.data['content']))
+            
             data = request.data
             # data['content'].replace('\n', '\\n')
             serializer = self.get_serializer(data=data)
