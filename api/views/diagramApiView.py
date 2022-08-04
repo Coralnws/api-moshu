@@ -54,7 +54,7 @@ class DiagramDetailView(generics.GenericAPIView):
                 data = request.data
                 # data['content'].replace('\n', '\\n')
                 # print("\n\njson parse\n", json.loads(data['content']),  "\ntype:", type(json.loads(data['content'])))
-                serializer = self.get_serializer(instance=Diagram, data=data)
+                serializer = self.get_serializer(instance=diagram, data=data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save(updatedAt=timezone.now())
                 data = serializer.data
