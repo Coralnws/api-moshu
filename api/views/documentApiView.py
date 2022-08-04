@@ -75,12 +75,15 @@ class DocumentDetailView(generics.GenericAPIView):
             document = get_object_or_404(Document, pk=documentId,isDeleted=False)
             isAdmin = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user,isAdmin=True).first()
             if request.user == document.createdBy or request.user.is_staff or isAdmin:
-                #document.delete()
+                document.delete()
+            
+                '''
                 document.isDeleted=True
                 document.save()
-
                 deleteRecord = Deletion(deletedBy=request.user,type=1,belongTo=document.belongTo.belongTo)
-                
+                deleteRecord.save()
+                document.deleteRecord=deleteRecord
+                '''
                 return Response({"message": "Delete Document Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Document"}, status=status.HTTP_401_UNAUTHORIZED)

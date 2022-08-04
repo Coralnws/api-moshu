@@ -120,6 +120,7 @@ class InviteView(generics.GenericAPIView):
             if not userInvite:
                 data={'code':2001,"message": "User Not Exist."}
                 return Response(data,status=status.HTTP_403_FORBIDDEN)
+                
             record = Invitation.objects.filter(teamId=team, user=userInvite.username).first()
             
             data = {'user':userInvite.username,'team':team.teamName,'teamId':team.id,'invitedBy':request.user.username,'result':0}

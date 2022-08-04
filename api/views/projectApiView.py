@@ -89,7 +89,6 @@ class ProjectDetailView(generics.GenericAPIView):
                 for diagram in allDiagrams:
                     diagram.isDeleted=True
                     diagram.deleteRecord = deleteRecord
-                
                 '''
                 return Response({"message": "Delete Project Successfully"}, status=status.HTTP_200_OK)
             else:
