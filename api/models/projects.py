@@ -13,6 +13,7 @@ class Project(models.Model):
     description = models.TextField(max_length=5000)
     createdBy = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=False, blank=False)
     belongTo = models.ForeignKey("Team", on_delete=models.CASCADE, null=False, blank=False)
+    deleteRecord = models.ForeignKey("Deletion", on_delete=models.SET_NULL, null=True, blank=True)
     isDeleted = models.BooleanField(default=False)
     createdAt = models.DateTimeField(default=timezone.now)
     updatedAt = models.DateTimeField(default=timezone.now)

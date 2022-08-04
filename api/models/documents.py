@@ -15,6 +15,7 @@ class Document(models.Model):
     content = models.JSONField()
     createdBy = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=False, blank=False)
     belongTo = models.ForeignKey("Project", on_delete=models.CASCADE, null=False, blank=False)
+    deleteRecord = models.ForeignKey("Deletion", on_delete=models.SET_NULL, null=True, blank=True)
     isDeleted = models.BooleanField(default=False)
     createdAt = models.DateTimeField(default=timezone.now)
     updatedAt = models.DateTimeField(default=timezone.now)

@@ -8,6 +8,9 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ..serializers.projectSerializers import *
 from ..models.projects import *
+from ..models.diagrams import *
+from ..models.documents import *
+from ..models.deletions import *
 from ..models.userRelations import UserTeam
 from ..api_throttles import *
 
@@ -75,21 +78,23 @@ class ProjectDetailView(generics.GenericAPIView):
             if isMember:
                 project.delete()
 
-                '''
                 project.isDeleted=True
                 project.save()
-                deleteRecord = Deletion(title=project.title,deletedBy=request.user,type=1,belongTo=project.belongTo.belongTo)
+                deleteRecord = Deletion(title=project.title,deletedBy=request.user,type=0,belongTo=project.belongTo.belongTo)
                 deleteRecord.save()
-                diagram.deleteRecord=deleteRecord
+                project.deleteRecord=deleteRecord
                 allDocuments = Document.objects.filter(belongTo=project)
                 for document in allDocuments:
                     document.isDeleted=True
                     document.deleteRecord = deleteRecord
+                    document.save()
                 allDiagrams = Diagram.objects.filter(belongTo=project)
                 for diagram in allDiagrams:
                     diagram.isDeleted=True
                     diagram.deleteRecord = deleteRecord
-                '''
+                    diagram.save()
+                project.save()
+                
                 return Response({"message": "Delete Project Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Project"}, status=status.HTTP_401_UNAUTHORIZED)

@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ..serializers.documentSerializers import *
 from ..models.documents import *
+from ..models.deletions import *
 from ..models.userRelations import UserProject, UserTeam
 from ..api_throttles import *
 
@@ -77,13 +78,14 @@ class DocumentDetailView(generics.GenericAPIView):
             if request.user == document.createdBy or request.user.is_staff or isAdmin:
                 document.delete()
             
-                '''
+                
                 document.isDeleted=True
                 document.save()
                 deleteRecord = Deletion(deletedBy=request.user,type=1,belongTo=document.belongTo.belongTo)
                 deleteRecord.save()
                 document.deleteRecord=deleteRecord
-                '''
+                document.save()
+                
                 return Response({"message": "Delete Document Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Document"}, status=status.HTTP_401_UNAUTHORIZED)

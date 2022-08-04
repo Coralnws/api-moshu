@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ..serializers.diagramSerializers import *
 from ..models.diagrams import *
+from ..models.deletions import *
 from ..models.projects import *
 from ..models.userRelations import UserProject, UserTeam
 from ..api_throttles import *
@@ -69,18 +70,17 @@ class DiagramDetailView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Delete Diagram By Id")
     def delete(self, request, diagramId):
         # try:
-            diagram = get_object_or_404(diagram, pk=diagramId,isDeleted=False)
+            diagram = get_object_or_404(Diagram, pk=diagramId,isDeleted=False)
             isAdmin = UserTeam.objects.filter(team=diagram.belongTo.belongTo, user =request.user,isAdmin=True).first()
             if request.user == diagram.createdBy or request.user.is_staff or isAdmin:
-                diagram.delete()
-
-                '''
+                #diagram.delete()
                 diagram.isDeleted=True
                 diagram.save()
-                deleteRecord = Deletion(deletedBy=request.user,type=1,belongTo=diagram.belongTo.belongTo)
+                deleteRecord = Deletion(deletedBy=request.user,type=2,belongTo=diagram.belongTo.belongTo)
                 deleteRecord.save()
                 diagram.deleteRecord=deleteRecord
-                '''
+                diagram.save()
+                
                 return Response({"message": "Delete Diagram Successfully"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Unauthorized for Delete Diagram"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -113,8 +113,8 @@ class DiagramCreateView(generics.CreateAPIView):
             serializer.is_valid(raise_exception=True)
             serializer.save(createdBy=request.user, belongTo=project)
             data = serializer.data
-            data['content'] = { 'children': data['content']}
-            print(type(data['content']))
+            #data['content'] = { 'children': data['content']}
+            #print(type(data['content']))
             data['message'] = "Create Diagram Successfully"
             return Response(data, status=status.HTTP_201_CREATED)   
             #else :

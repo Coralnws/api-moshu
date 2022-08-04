@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db import models
 
 
-class Diagram(models.Model):
+class Deletion(models.Model):
     RESULT = (
         (0, 'Project'),
         (1, 'Document'),
