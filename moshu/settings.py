@@ -35,8 +35,22 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'stagging-api-moshu.cheangfou.com', 'www.stagging-api-moshu.cheangfou.com', 'uwsgimoshu']
+CSRF_TRUSTED_ORIGINS = [
+    'https://stagging-api-moshu.cheangfou.com'
+]
 
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    'stagging-api-moshu.cheangfou.com', 
+    'www.stagging-api-moshu.cheangfou.com', 
+    'uwsgimoshu', 
+    'https://stagging-api-moshu.cheangfou.com'
+]
+
+CORS_ORIGIN_WHITELIST = [
+    'https://stagging-api-moshu.cheangfou.com',
+]
 
 # Application definition
 
