@@ -80,9 +80,10 @@ class ProjectDetailView(generics.GenericAPIView):
 
                 project.isDeleted=True
                 project.save()
-                deleteRecord = Deletion(title=project.title,deletedBy=request.user,type=0,belongTo=project.belongTo.belongTo)
+                deleteRecord = Deletion(title=project.title,deletedBy=request.user,type=0,belongTo=project.belongTo)
                 deleteRecord.save()
                 project.deleteRecord=deleteRecord
+                project.save()
                 allDocuments = Document.objects.filter(belongTo=project)
                 for document in allDocuments:
                     document.isDeleted=True
@@ -93,7 +94,7 @@ class ProjectDetailView(generics.GenericAPIView):
                     diagram.isDeleted=True
                     diagram.deleteRecord = deleteRecord
                     diagram.save()
-                project.save()
+                
                 
                 return Response({"message": "Delete Project Successfully"}, status=status.HTTP_200_OK)
             else:

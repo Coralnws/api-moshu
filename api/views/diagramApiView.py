@@ -71,12 +71,12 @@ class DiagramDetailView(generics.GenericAPIView):
     def delete(self, request, diagramId):
         # try:
             diagram = get_object_or_404(Diagram, pk=diagramId,isDeleted=False)
-            isAdmin = UserTeam.objects.filter(team=diagram.belongTo.belongTo, user =request.user,isAdmin=True).first()
-            if request.user == diagram.createdBy or request.user.is_staff or isAdmin:
+            isMember = UserTeam.objects.filter(team=diagram.belongTo.belongTo, user =request.user).first()
+            if isMember:
                 #diagram.delete()
                 diagram.isDeleted=True
                 diagram.save()
-                deleteRecord = Deletion(deletedBy=request.user,type=2,belongTo=diagram.belongTo.belongTo)
+                deleteRecord = Deletion(title=diagram.title,deletedBy=request.user,type=2,belongTo=diagram.belongTo.belongTo)
                 deleteRecord.save()
                 diagram.deleteRecord=deleteRecord
                 diagram.save()
