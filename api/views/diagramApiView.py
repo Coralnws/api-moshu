@@ -38,6 +38,8 @@ class DiagramDetailView(generics.GenericAPIView):
             
             serializer = self.get_serializer(instance=diagram)
             data = serializer.data
+            print(type(data['componentData']))
+            print(type(data['canvasStyleData']))
             data['message'] = "Get Diagram Detail Successfully"
             return Response(data, status=status.HTTP_200_OK)
         # except:
@@ -71,7 +73,7 @@ class DiagramDetailView(generics.GenericAPIView):
     def delete(self, request, diagramId):
         # try:
             diagram = get_object_or_404(Diagram, pk=diagramId,isDeleted=False)
-            isMember = UserTeam.objects.filter(team=diagram.belongTo.belongTo, user =request.user).first()
+            isMember = UserTeam.objects.filter(team=diagram.belongTo.belongTo, user=request.user).first()
             if isMember:
                 #diagram.delete()
                 diagram.isDeleted=True
