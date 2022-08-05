@@ -9,7 +9,7 @@ Serializer class for Document Detail
 class DocumentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ['id', 'title', 'description', 'content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title', 'content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
         extra_kwargs = {
             'id': {'read_only': True},
             'createdBy': {'read_only': True},
@@ -28,7 +28,7 @@ class DocumentProfileSerializer(serializers.ModelSerializer):
     # response = serializers.CharField()
     class Meta:
         model = Document
-        fields = ['id', 'title', 'description', 'content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title',  'content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
         extra_kwargs = {
             'id': {'read_only': True},
             'createdBy': {'read_only': True},
@@ -44,7 +44,7 @@ Serializer class for Creating Document
 class DocumentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ['id','title', 'description', 'content']
+        fields = ['id','title','content']
         
     def validate(self, attrs):
         return super().validate(attrs)
@@ -60,7 +60,7 @@ class ListDocumentSerializer(serializers.ModelSerializer):
     # response = serializers.CharField()
     class Meta:
         model = Document
-        fields = ['id', 'title', 'description','content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title', 'content', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
 
 
 # class ListTeamDocumentSerializer(serializers.ModelSerializer):

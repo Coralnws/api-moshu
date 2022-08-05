@@ -9,7 +9,7 @@ Serializer class for Diagram Detail
 class DiagramDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagram
-        fields = ['id', 'title', 'description',  'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title',  'componentData','canvasStyleData',  'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
         extra_kwargs = {
             'id': {'read_only': True},
             'createdBy': {'read_only': True},
@@ -28,7 +28,7 @@ class DiagramProfileSerializer(serializers.ModelSerializer):
     # response = serializers.CharField()
     class Meta:
         model = Diagram
-        fields = ['id', 'title', 'description', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title',  'componentData','canvasStyleData', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
         extra_kwargs = {
             'id': {'read_only': True},
             'createdBy': {'read_only': True},
@@ -44,7 +44,7 @@ Serializer class for Creating Diagram
 class DiagramCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagram
-        fields = ['id','title', 'description']
+        fields = ['id','title', 'componentData','canvasStyleData']
         
     def validate(self, attrs):
         return super().validate(attrs)
@@ -60,7 +60,7 @@ class ListDiagramSerializer(serializers.ModelSerializer):
     # response = serializers.CharField()
     class Meta:
         model = Diagram
-        fields = ['id', 'title', 'description', 'isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
+        fields = ['id', 'title',  'componentData','canvasStyleData','isDeleted', 'createdBy', 'belongTo', 'createdAt', 'updatedAt']
 
 
 class ImageSerializer(serializers.ModelSerializer):

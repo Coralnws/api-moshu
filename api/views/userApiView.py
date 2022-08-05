@@ -137,3 +137,39 @@ class LogoutView(generics.GenericAPIView):
             return Response({"message": "Logout Successfully"}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({"message": "Logout Failed"}, status=status.HTTP_400_BAD_REQUEST)
+
+"""
+PUT: Reset Password (for authenticated user only)
+"""
+class ResetPasswordbyOldpasswordView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ResetPasswordByPasswordSerializer
+
+    @swagger_auto_schema(operation_summary="Reset Password Through Old Password")
+    def put(self, request):
+        try:
+            oldpassword = request.data['oldpassword']
+            username = request.user.username
+            user = CustomUser.objects.get(username=username)
+            result = user.check_password(oldpassword)
+            if result:
+                code = UserValidation("","",request.data['newpassword'],request.data['newpassword2'],0)
+
+                if code == 1001:
+                    return Response({"message": "Email is taken.","code":code}, status=status.HTTP_400_BAD_REQUEST)
+                elif code == 1002:
+                    return Response({"message": "Username is taken.","code":code}, status=status.HTTP_400_BAD_REQUEST)
+                elif code == 1003:
+                    return Response({"message": "Password not match.","code":code}, status=status.HTTP_400_BAD_REQUEST)
+                elif code == 1004:
+                    return Response({"message": "Password too simple.","code":code}, status=status.HTTP_400_BAD_REQUEST)
+
+                serializer = self.get_serializer(data=request.data, user=self.request.user)
+                if serializer.is_valid(raise_exception=True):
+                    serializer.updatePassword()
+                    # When update success, should terminate the token, so it cannot be used again
+                    return Response({"message": "Password Reset Successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Old Password Is Incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "Password Reset Failed"}, status=status.HTTP_400_BAD_REQUEST)

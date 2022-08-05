@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ..serializers.documentSerializers import *
 from ..models.documents import *
+from ..models.deletions import *
 from ..models.userRelations import UserProject, UserTeam
 from ..api_throttles import *
 
@@ -73,13 +74,16 @@ class DocumentDetailView(generics.GenericAPIView):
     def delete(self, request, documentId):
         # try:
             document = get_object_or_404(Document, pk=documentId,isDeleted=False)
-            isAdmin = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user,isAdmin=True).first()
-            if request.user == document.createdBy or request.user.is_staff or isAdmin:
+            isMember = UserTeam.objects.filter(team=document.belongTo.belongTo, user =request.user).first()
+            if isMember:
                 #document.delete()
+            
                 document.isDeleted=True
                 document.save()
-
-                deleteRecord = Deletion(deletedBy=request.user,type=1,belongTo=document.belongTo.belongTo)
+                deleteRecord = Deletion(title=document.title,deletedBy=request.user,type=1,belongTo=document.belongTo.belongTo)
+                deleteRecord.save()
+                document.deleteRecord=deleteRecord
+                document.save()
                 
                 return Response({"message": "Delete Document Successfully"}, status=status.HTTP_200_OK)
             else:

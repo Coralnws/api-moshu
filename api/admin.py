@@ -7,6 +7,7 @@ from .models.documents import Document
 from .models.diagrams import *
 from .models.invitations import Invitation
 from .models.userRelations import *
+from .models.deletions import *
 
 
 # Register your models here.
@@ -38,6 +39,9 @@ class ImageConfig(admin.ModelAdmin):
 class DiagramConfig(admin.ModelAdmin):
     list_display = ('id','title','belongTo')
 
+class DeletionConfig(admin.ModelAdmin):
+    list_display = ('id','title','belongTo','type','deletedBy')
+
 admin.site.register(CustomUser, UserAdminConfig)
 admin.site.register(Team, TeamAdminConfig)
 admin.site.register(Project, ProjectAdminConfig)
@@ -47,3 +51,4 @@ admin.site.register(UserTeam, UserTeamAdminConfig)
 admin.site.register(UserProject, UserProjectAdminConfig)
 admin.site.register(Image, ImageConfig)
 admin.site.register(Diagram, DiagramConfig)
+admin.site.register(Deletion, DeletionConfig)

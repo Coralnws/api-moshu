@@ -128,3 +128,22 @@ class ListMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'username', 'realname','email', 'profile','position']
+
+
+class ResetPasswordByPasswordSerializer(serializers.Serializer):
+    newpassword = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    newpassword2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    oldpassword = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+
+        
+    def updatePassword(self):
+        password = self.validated_data['newpassword']
+        user = self.user
+        user.set_password(password)
+        user.updatedAt = timezone.now()
+        user.save()
+

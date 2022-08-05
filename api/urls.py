@@ -4,6 +4,8 @@ from api.views.teamApiView import *
 from api.views.projectApiView import *
 from api.views.documentApiView import *
 from api.views.diagramApiView import *
+from api.views.recycleApiVew import *
+
 
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_simplejwt.views import (
@@ -52,6 +54,14 @@ urlpatterns = [
     path('document/create/<uuid:projectId>', DocumentCreateView.as_view(), name="create_document"),
     path('document/list', DocumentListView.as_view(), name="document_list"),
     
+    #Recovery
+    #path('recovery/project/<uuid:deleteRecordId>', RecoverProjectView.as_view(), name="recover_project"),
+    #path('recovery/document/<uuid:deleteRecordId>', RecoverDocumentView.as_view(), name="recover_document"),
+    #path('recovery/diagram/<uuid:deleteRecordId>', RecoverDiagramView.as_view(), name="recover_diagram"),
+
+    path('recovery/<uuid:deleteRecordId>', RecoveryView.as_view(), name="recover_project"),
+    path('recovery/list/<uuid:teamId>', RecoveryListView.as_view(), name="recovery_list"),
+    path('recovery/clear/<uuid:teamId>', ClearAllView.as_view(), name="clear_recycleBin"),
 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
