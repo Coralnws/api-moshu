@@ -110,6 +110,11 @@ class DiagramCreateView(generics.CreateAPIView):
             project = get_object_or_404(Project, pk=projectId)
             
             data = request.data
+            data._mutable = True
+            data1 = '[{"animations":[],"events":{},"groupStyle":{},"isLock":false,"collapseName":"","linkage":{"duration":0,"data":[{"id":"","label":"","event":"","style":[{"key":"","value":""}]}]},"component":"VText","label":"文字","propValue":"这是一个画布","icon":"wenben","request":{"method":"GET","data":[],"url":"","series":false,"time":1000,"paramType":"","requestCount":0},"style":{"rotate":0,"opacity":1,"width":97,"height":28,"fontSize":"","fontWeight":400,"lineHeight":"","letterSpacing":0,"textAlign":"","color":"","top":193,"left":222},"id":"_udPGUKIdiUjAo6jsosQr"}]'
+            data2 = '{"width":1920,"height":1020,"scale":100,"color":"#000","opacity":1,"background":"#fff","fontSize":14}'
+            data['componentData'] = data1
+            data['canvasStyleData'] = data2
             # data['content'].replace('\n', '\\n')
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)

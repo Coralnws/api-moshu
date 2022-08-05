@@ -9,13 +9,13 @@ from ..utils import get_thumbnail
 
 class Diagram(models.Model):
 
+    data1 = '[{"animations":[],"events":{},"groupStyle":{},"isLock":false,"collapseName":"","linkage":{"duration":0,"data":[{"id":"","label":"","event":"","style":[{"key":"","value":""}]}]},"component":"VText","label":"文字","propValue":"这是一个画布","icon":"wenben","request":{"method":"GET","data":[],"url":"","series":false,"time":1000,"paramType":"","requestCount":0},"style":{"rotate":0,"opacity":1,"width":97,"height":28,"fontSize":"","fontWeight":400,"lineHeight":"","letterSpacing":0,"textAlign":"","color":"","top":193,"left":222},"id":"_udPGUKIdiUjAo6jsosQr"}]'
+    data2 = '{"width":1920,"height":1020,"scale":100,"color":"#000","opacity":1,"background":"#fff","fontSize":14}'
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=150)
     description = models.TextField(max_length=10000,null=True,blank=True)
-    #componentData = models.JSONField(null=True)
-    componentData = models.TextField(max_length=10000,null=True,blank=True)
-    canvasStyleData = models.TextField(max_length=10000,null=True,blank=True)
-    #canvasStyleData = models.JSONField(null=True)
+    componentData = models.TextField(max_length=50000,null=True,blank=True)
+    canvasStyleData = models.TextField(max_length=50000,null=True,blank=True)
     content = models.JSONField(null=True,blank=True)
     createdBy = models.ForeignKey("CustomUser", on_delete=models.CASCADE, null=False, blank=False)
     belongTo = models.ForeignKey("Project", on_delete=models.CASCADE, null=False, blank=False)
