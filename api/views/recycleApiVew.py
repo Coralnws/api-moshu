@@ -99,22 +99,27 @@ class ClearAllView(generics.GenericAPIView):
     @swagger_auto_schema(operation_summary="Empty Recycle Bin")
     def delete(self, request, teamId):
         allRecord = Deletion.objects.filter(belongTo=teamId)
-        isMember = UserTeam.objects.filter(team=teamId, user =request.user).first() 
+        isMember = UserTeam.objects.filter(team=teamId, user=request.user).first() 
         if isMember:
             for record in allRecord:
                 if record.type == 0: #project
                     project = get_object_or_404(Project, deleteRecord=record)
                     project.delete()
+                    record.delete()
                 
-                elif record.type == 1: #document
+                if record.type == 1: #document
                     document = get_object_or_404(Document, deleteRecord=record)
                     document.delete()
+                    record.delete()
                 
-                elif record.type == 2: #diagram
+                if record.type == 2: #diagram
                     diagram = get_object_or_404(Diagram, deleteRecord=record)
                     diagram.delete()
+                    record.delete()
                 
-                record.delete()
+            
+            return Response({"message": "Clear successfully"}, status=status.HTTP_401_UNAUTHORIZED)
+
         else:
             return Response({"message": "Not team member"}, status=status.HTTP_401_UNAUTHORIZED)
 
