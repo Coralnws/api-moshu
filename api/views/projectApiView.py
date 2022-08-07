@@ -146,20 +146,27 @@ class ProjectListView(generics.ListAPIView):
         search = self.request.GET.get('search')
         team = self.request.GET.get('belongTo')
         createdBy = self.request.GET.get('createdBy')
+        order = self.request.GET.get('order')
 
         filter = Q()
 
         if search is not None:
             searchTerms = search.split(' ')
             for term in searchTerms:
-                filter &= Q(title__icontains=term) | Q(description__icontains=term) | Q(createdBy__username__icontains=term)
+                filter &= Q(title__icontains=term) | Q(description__icontains=term)
 
         if team is not None:
             filter &= Q(belongTo=team)
 
         if createdBy is not None:
             filter &= Q(createdBy = createdBy)
+        
+        ordering = '-createdAt'
+
+        if order == 'title':
+            ordering = 'title'
+
 
         filter &= Q(isDeleted=False)
-        allProjects = Project.objects.filter(filter).order_by('-createdAt')
+        allProjects = Project.objects.filter(filter).order_by(ordering)
         return allProjects; # will implement ordered By soon
