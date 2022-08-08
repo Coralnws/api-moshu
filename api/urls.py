@@ -51,6 +51,7 @@ urlpatterns = [
 
     # Document
     path('document/<uuid:documentId>', DocumentDetailView.as_view(), name="document_detail"),
+    path('document/<uuid:documentId>/changes', DocumentChangesView.as_view(), name="document_changes"),
     path('document/create/<uuid:projectId>', DocumentCreateView.as_view(), name="create_document"),
     path('document/list', DocumentListView.as_view(), name="document_list"),
     

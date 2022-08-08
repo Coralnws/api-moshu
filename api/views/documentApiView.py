@@ -1,11 +1,13 @@
 import json
 import operator
+from django.db import transaction, IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import generics, status, permissions
 from drf_yasg.utils import swagger_auto_schema
+from ..text_operation import TextOperation
 
 from ..serializers.documentSerializers import *
 from ..models.documents import *
@@ -154,3 +156,89 @@ class DocumentListView(generics.ListAPIView):
         filter &= Q(isDeleted=False)
         allDocuments = Document.objects.filter(filter).order_by('-createdAt')
         return allDocuments; # will implement ordered By soon
+
+
+
+"""
+Document Changes
+"""
+class DocumentChangesView(generics.GenericAPIView):
+    def get(self, request, documentId):
+        # current version
+        version = int(self.request.GET.get('v')) if self.request.GET.get('v') else NULL
+        try: 
+            doc = Document.objects.get(id=documentId)
+            if version is not None:
+                if version > doc.version:
+                    return Response({"message": "Version in The Future"}, status=status.HTTP_404_NOT_FOUND)
+                # only get the version that greater than the GET
+                changes = DocumentChange.objects.filter(document=doc, version__gt = version).order_by('version')[:50]
+                # get serialized data of DocumentChange
+                out = [c.export() for c in changes]
+                lastVersion = out[-1]['version'] if len(out) > 0 else version
+            else:
+                out = []
+                lastVersion = doc.version
+        except Document.DoesNotExist:
+            if version is not None and version > 0:
+                return Response({"message": "Version in The Future"}, status=status.HTTP_404_NOT_FOUND)
+            out = []
+            lastVersion = 0
+        # Serialize data
+        data = []
+        for i in out:
+            body = {}
+            body['id'] = i['version']
+            body['data'] = i
+            data.append(body)
+        res = {}
+        res['message'] = "Latest Version Get Successfully"
+        res['data'] = data
+        return Response(res, status=status.HTTP_200_OK)
+
+    """
+        document
+        requestId
+        parentVersion
+    """
+
+    def post(self, request, documentId):
+        opdata = json.loads(request.data['op'])
+        op = TextOperation(opdata)
+        requestId = request.data['requestId']
+        parentVersion = request.data['parentVersion']
+        saved = False
+
+        with transaction.atomic():
+            doc = Document.objects.select_for_update().get(id=documentId)
+            try:
+                # already submmited???
+                c = DocumentChange.objects.get(document=doc, requestId=requestId, parentVersion=parentVersion)
+            except DocumentChange.DoesNotExist:
+                changeSince = DocumentChange.objects.filter(document=doc, version__gt=parentVersion, version__lte=doc.version).order_by('version')
+
+                for c in changeSince:
+                    op2 = TextOperation(json.loads(c.data))
+                    try:
+                        op, _ = TextOperation.transform(op, op2)
+                    except: 
+                        return Response({"message": "Unable to Tranform against version {}".format(c.version)}, status=status.HTTP_400_BAD_REQUEST)
+
+                try:
+                    doc.content = op(doc.content)
+                except:
+                    return Response({"message": "Unable to Apply {} to version {}".format(json.dumps(op.ops), doc.version)}, status=status.HTTP_400_BAD_REQUEST)
+
+                nextVersion = doc.version + 1
+                c = DocumentChange(document=doc, version=nextVersion, requestId=requestId, parentVersion=parentVersion, data=json.dumps(op.ops))
+                doc.version = nextVersion
+                doc.save()
+                saved = True
+
+        # when making changes and alr saved changes to the document
+        if saved: 
+            res = {}
+            res['message'] = "Latest Version Get Successfully"
+            res['id'] = c.version
+            res['data'] = c.export()
+            return Response(res, status=status.HTTP_200_OK)
